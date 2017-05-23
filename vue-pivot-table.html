@@ -2,24 +2,18 @@
 <html>
 <head>
 	<title>Vue-Pivot-Table</title>
-
 	<!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-
   <!-- Latest compiled and minified CSS -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-
 	<!-- Optional theme -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-
 	<!-- jquery -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-
 	<!-- Latest compiled and minified JavaScript -->
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-
+	<!-- Vue.js -->
 	<script src="js/vue.js"></script>
 </head>
 <body>
@@ -28,9 +22,8 @@
 		  <!-- Default panel contents -->
 		  <div class="panel-heading">
 		  	<h3>{{ message }}</h3>
-		    <p><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> ボタンを押すと保存します。</p>
+				<p><button class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span></button> を押すと保存します。</p>
 		  </div>
-		  
 		  <!-- Table -->
 		  <table class="table table-bordered">
 			  <thead>
@@ -38,7 +31,8 @@
 			    	<th></th>
 			    	<th>在庫</th>
 			    	<th>受注</th>
-			    	<th>残</th>
+			    	<th>残数</th>
+						<!--ユーザー名-->
 			    	<th v-for="user in users">
 			    		{{ user.name }}
 			    	</th>
@@ -46,11 +40,16 @@
 			  </thead>
 			  <tbody>
 			  	<tr v-for="item in items">
+						<!--品名-->
 			  		<th scope="row">{{ item.name }}</th>
+						<!--在庫-->
 			  		<th scope="row">{{ item.stock }}</th>
+						<!--受注-->
 			  		<th scope="row">{{ itemOrderSummary(item.name) }}</th>
+						<!--残数-->
 			  		<th scope="row"><stockremaincell v-bind:itemname="item.name" v-bind:items="items" v-bind:itemsum="itemOrderSummary(item.name)"></stockremaincell></th>
-			  		<th v-for="user in users" scope="row">
+						<!--ユーザー毎の受注-->
+						<th v-for="user in users" scope="row">
 			    		<cell v-bind:username="user.name" v-bind:itemname="item.name" v-bind:userlevel="user.level" v-bind:itemprice="item.price" v-bind:order="user.orders[item.name]"></cell>
 			    	</th>
 			  	</tr>
@@ -59,6 +58,7 @@
 			  		<th></th>
 			  		<th></th>
 			  		<th></th>
+						<!--ユーザーのオーダー数合計-->
 			  		<th v-for="user in users">
 			  			{{ userOrderSummary(user.name) }}
 			  		</th>
@@ -66,170 +66,13 @@
 			  </tbody>
 			</table>
 
+			<!--オーダー数変更履歴-->
 			<div class="panel-body">
 		    <textarea class="form-control" rows="10" v-model="console"></textarea>
 		  </div>
 		</div>		
 	</div>
 
-
-	<script type="text/javascript">
-
-Vue.component('stockremaincell', {
-	name: "stockremaincell",
-	props: ["itemname", "items", "itemsum"],
-	template: '<p v-bind:class="cellStyle">{{ this.itemOrderRemain() }}</p>',
-	methods: {
-		itemOrderRemain: function(){
-  		try{
-  			stock = this.items.find(function(item){ if(item.name===this.itemname) return true; }.bind(this)).stock;
-	  		return stock - this.itemsum;
-  		}
-  		catch(e){
-  			console.log(e);
-  			return undefined;
-  		}
-  	}
-	},
-	computed: {
-	  cellStyle: function () {
-	  	remain = this.itemOrderRemain();
-	  	if(remain > 0){
-	  		return "text-primary";
-	  	}
-	  	else if(remain < 0){
-	  		return "text-danger";
-	  	}
-	  	else{
-	  		return "";
-	  	}
-	  }
-	}
-})
-
-Vue.component('cell', {
-	name: "cell",
-	props: ["username", "itemname", "userlevel", "itemprice", "order"],
-	data: function(){
-		return { 
-			orderQty: this.order
-		 }
-	},
-  template: '<div><input type="text" size="3" v-model="orderQty"><button class="btn btn-sm btn-primary" v-on:click="onSave"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span></button></div>',
-  methods: {
-  	onSave: function(){
-  		app.updateOrder(this.itemname, this.username, this.orderQty);
-  	}
-  }
-})
-
-var app = new Vue({
-  el: '#app',
-  name: "app",
-  data: {
-    message: 'Vue.jsでピボットテーブル',
-    users: [
-    	{name: "yuto", level: 1, orders: {
-	    		item1: 1,
-	    		item2: 3,
-	    		item3: 1,
-	    		item4: 0,
-	    		item5: 0,
-	    		item6: 1
-	    	}
-	    },
-    	{name: "asano", level: 2, orders: {
-	    		item1: 1,
-	    		item2: 0,
-	    		item3: 0,
-	    		item4: 0,
-	    		item5: 4,
-	    		item6: 0
-	    	}
-	    },
-    	{name: "yano", level: 3, orders: {
-	    		item1: 1,
-	    		item2: 0,
-	    		item3: 1,
-	    		item4: 1,
-	    		item5: 1,
-	    		item6: 1
-	    	}
-	    },
-    	{name: "yuji", level: 4, orders: {
-	    		item1: 2,
-	    		item2: 0,
-	    		item3: 0,
-	    		item4: 1,
-	    		item5: 0,
-	    		item6: 3
-	    	}
-	    },
-    	{name: "hose", level: 5, orders: {
-	    		item1: 0,
-	    		item2: 0,
-	    		item3: 1,
-	    		item4: 0,
-	    		item5: 0,
-	    		item6: 0
-	    	}
-	    },
-    	{name: "masaki", level: 6, orders: {
-	    		item1: 0,
-	    		item2: 2,
-	    		item3: 20,
-	    		item4: 0,
-	    		item5: 0,
-	    		item6: 0
-	    	}
-	    },
-    ],
-    items: [
-    	{name: "item1", stock: 10, price: 12000},
-    	{name: "item2", stock: 5, price: 3900},
-    	{name: "item3", stock: 20, price: 9800},
-    	{name: "item4", stock: 4, price: 56000},
-    	{name: "item5", stock: 12, price: 52000},
-    	{name: "item6", stock: 10, price: 32000},
-    ],
-    console: ""
-  },
-  methods: {
-  	itemList: function(){
-  		return this.items.map(function(r){ return r.name; });
-  	},
-  	itemOrderSummary: function(itemName){
-  		return this.users.map(function(user){ return user.orders[itemName] }).reduce(function(prev, current){ return parseInt(prev) + parseInt(current); });
-  	},
-  	userOrderSummary: function(username){
-  		user = this.getUser(username);
-  		itemlist = this.itemList();
-  		count = 0;
-  		for(var i=0; i < this.itemList().length; i++){
-  			count += parseInt(user.orders[itemlist[i]]);
-  		}
-
-  		return count;
-  	},
-  	updateOrder: function(item, user, qty){
-  		user = this.getUser(user);
-  		user.orders[item] = qty;
-
-  		now = new Date();
-  		log = [{
-  		  			updated_at: now,
-  		  			item: item,
-  		  			user: user,
-  		  			qty: qty
-  		  		}];
-  		this.console += JSON.stringify(log) + "\r\n";
-  	},
-  	getUser: function(username){
-  		return this.users.find(function(r){ if(r.name===username) return true });
-  	}
-  }
-})
-
-	</script>
+	<script src="js/vue-pivot-table.js"></script>
 </body>
 </html>
