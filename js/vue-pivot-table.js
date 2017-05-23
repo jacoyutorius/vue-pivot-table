@@ -19,7 +19,7 @@ Vue.component('stockremaincell', {
 	  		return "text-danger";
 	  	}
 	  	else{
-	  		return "";
+	  		return "text-muted";
 	  	}
 	  }
 	}
@@ -34,7 +34,7 @@ Vue.component('cell', {
 			orderQty: this.order
 		 }
 	},
-  template: '<div><input type="text" size="3" v-model="orderQty"><button class="btn btn-sm btn-primary" v-on:click="onSave"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span></button></div>',
+  template: '<div><input type="number" min="0" v-model="orderQty"><button class="btn btn-sm btn-primary" v-on:click="onSave"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span></button></div>',
   methods: {
   	onSave: function(){
   		app.updateOrder(this.itemname, this.username, this.orderQty);
@@ -121,8 +121,8 @@ var app = new Vue({
   	itemOrderSummary: function(itemName){
   		return this.users.map(function(user){ return user.orders[itemName] }).reduce(function(prev, current){ return parseInt(prev) + parseInt(current); });
   	},
-  	userOrderSummary: function(username){
-  		user = this.getUser(username);
+  	userOrderSummary: function(userName){
+  		user = this.getUser(userName);
   		itemlist = this.itemList();
   		count = 0;
   		for(var i=0; i < this.itemList().length; i++){
@@ -131,21 +131,21 @@ var app = new Vue({
 
   		return count;
   	},
-  	updateOrder: function(item, user, qty){
-  		user = this.getUser(user);
-  		user.orders[item] = qty;
+  	updateOrder: function(itemName, userName, qty){
+  		user = this.getUser(userName);
+  		user.orders[itemName] = qty;
 
   		now = new Date();
   		log = [{
-  		  			updated_at: now,
-  		  			item: item,
-  		  			user: user,
-  		  			qty: qty
-  		  		}];
+						updated_at: now,
+						itemName: itemName,
+						userName: userName,
+						qty: qty
+					}];
   		this.console += JSON.stringify(log) + "\r\n";
   	},
-  	getUser: function(username){
-  		return this.users.find(function(r){ if(r.name===username) return true });
+  	getUser: function(userName){
+  		return this.users.find(function(r){ if(r.name===userName) return true });
   	}
   }
 })
