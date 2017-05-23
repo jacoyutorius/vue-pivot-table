@@ -2,18 +2,11 @@
 //  セルに入力された値より受注数をサマリ。在庫数を下回ったら赤字で表示する。
 Vue.component('stockremaincell', {
 	name: "stockremaincell",
-	props: ["itemname", "items", "itemsum"],
+  props: ["itemstock", "itemsum"],
 	template: '<p v-bind:class="cellStyle">{{ this.itemOrderRemain() }}</p>',
 	methods: {
 		itemOrderRemain: function(){
-  		try{
-  			stock = this.items.find(function(item){ if(item.name===this.itemname) return true; }.bind(this)).stock;
-	  		return stock - this.itemsum;
-  		}
-  		catch(e){
-  			console.log(e);
-  			return undefined;
-  		}
+      return parseInt(this.itemstock) - parseInt(this.itemsum);
   	}
 	},
 	computed: {

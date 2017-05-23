@@ -47,7 +47,7 @@
 						<!--受注-->
 			  		<th scope="row">{{ itemOrderSummary(item.name) }}</th>
 						<!--残数-->
-			  		<th scope="row"><stockremaincell v-bind:itemname="item.name" v-bind:items="items" v-bind:itemsum="itemOrderSummary(item.name)"></stockremaincell></th>
+			  		<th scope="row"><stockremaincell v-bind:itemstock="item.stock" v-bind:itemsum="itemOrderSummary(item.name)"></stockremaincell></th>
 						<!--ユーザー毎の受注-->
 						<th v-for="user in users" scope="row">
 			    		<cell v-bind:username="user.name" v-bind:itemname="item.name" v-bind:userlevel="user.level" v-bind:itemprice="item.price" v-bind:order="user.orders[item.name]"></cell>
