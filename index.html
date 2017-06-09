@@ -28,54 +28,19 @@
 		  <!-- Default panel contents -->
 		  <div class="panel-heading">
 		  	<h3>{{ message }}</h3>
-				<p><button class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span></button> を押すと保存します。</p>
+				<p>Push <button class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span></button> to save.</p>
 		  </div>
+
 		  <!-- Table -->
-		  <table class="table table-bordered">
-			  <thead>
-			    <tr>
-			    	<th></th>
-			    	<th>在庫</th>
-			    	<th>受注</th>
-			    	<th>残数</th>
-						<!--ユーザー名-->
-			    	<th v-for="user in users">
-			    		{{ user.name }}
-			    	</th>
-			    </tr>
-			  </thead>
-			  <tbody>
-			  	<tr v-for="item in items">
-						<!--品名-->
-			  		<th scope="row">{{ item.name }}</th>
-						<!--在庫-->
-			  		<th scope="row">{{ item.stock }}</th>
-						<!--受注-->
-			  		<th scope="row">{{ itemOrderSummary(item.name) }}</th>
-						<!--残数-->
-			  		<th scope="row"><stockremaincell v-bind:itemstock="item.stock" v-bind:itemsum="itemOrderSummary(item.name)"></stockremaincell></th>
-						<!--ユーザー毎の受注-->
-						<th v-for="user in users" scope="row">
-			    		<cell v-bind:username="user.name" v-bind:itemname="item.name" v-bind:userlevel="user.level" v-bind:itemprice="item.price" v-bind:order="user.orders[item.name]"></cell>
-			    	</th>
-			  	</tr>
-			  	<tr>
-			  		<th></th>
-			  		<th></th>
-			  		<th></th>
-			  		<th></th>
-						<!--ユーザーのオーダー数合計-->
-			  		<th v-for="user in users">
-			  			{{ userOrderSummary(user.name) }}
-			  		</th>
-			  	</tr>
-			  </tbody>
-			</table>
+		  <vtable
+				v-bind:items="items"
+				v-bind:users="users"
+			></vtable>
 
 			<!--オーダー数変更履歴-->
 			<div class="panel-body">
-		    <textarea class="form-control" rows="10" v-model="console"></textarea>
-		  </div>
+				<textarea class="form-control" rows="10" v-model="console"></textarea>
+			</div>
 		</div>		
 	</div>
 

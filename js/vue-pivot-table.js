@@ -1,7 +1,7 @@
 // "受注残"セル
 //  セルに入力された値より受注数をサマリ。在庫数を下回ったら赤字で表示する。
-Vue.component('stockremaincell', {
-	name: "stockremaincell",
+Vue.component('remainCell', {
+	name: "remainCell",
   props: ["itemstock", "itemsum"],
 	template: '<p v-bind:class="cellStyle">{{ this.itemOrderRemain() }}</p>',
 	methods: {
@@ -25,9 +25,9 @@ Vue.component('stockremaincell', {
 	}
 })
 
-// オーダー数入力セル
-Vue.component('cell', {
-	name: "cell",
+// inputcell: オーダー数入力
+Vue.component('inputCell', {
+	name: "inputCell",
 	props: ["username", "itemname", "userlevel", "itemprice", "order"],
 	data: function(){
 		return { 
@@ -42,12 +42,85 @@ Vue.component('cell', {
   }
 })
 
+// tr
+Vue.component("vRow", {
+	name: "vRow",
+	props: ["item", "users"],
+	template: '<tr>' +
+					'<th>{{item.name}}</th>' + 
+					'<th>{{item.stock}}</th>' + 
+					'<th>{{itemOrderSummary(item.name)}}</th>' + 
+					'<th><remainCell v-bind:itemstock="item.stock" v-bind:itemsum="itemOrderSummary(item.name)"></remainCell></th>' + 
+					'<th v-for="user in users">' + 
+					'<inputCell v-bind:username="user.name" v-bind:itemname="item.name" v-bind:userlevel="user.level" v-bind:itemprice="item.price" v-bind:order="user.orders[item.name]"></inputCell>' +
+					'</th>' +
+				'</tr>',
+	methods: {
+		itemOrderSummary: function(itemName){
+			return this.users.map(function(user){ return user.orders[itemName] }).reduce(function(prev, current){ return parseInt(prev) + parseInt(current); });
+		}
+	}
+})
+
+// tbody
+Vue.component("vBody", {
+	name: "vBody",
+	props: ["items", "users"],
+	template: '<tbody>' +
+		'<vRow v-for="item in items" :key="item.name" v-bind:item="item" v-bind:users="users"></vRow>' +
+		'<tr>' +
+			'<th></th>' +
+			'<th></th>' +
+			'<th></th>' +
+			'<th></th>' +
+			'<th v-for="user in users">' +
+				'{{ userOrderSummary(user.name) }}' +
+			'</th>' +
+		'</tr>' +
+		'</tbody>',
+	methods: {
+		itemList: function(){
+  		return this.items.map(function(r){ return r.name; });
+  	},
+		getUser: function(userName){
+  		return this.users.find(function(r){ if(r.name===userName) return true });
+  	},
+		userOrderSummary: function(userName){
+			user = this.getUser(userName);
+  		itemlist = this.itemList();
+  		count = 0;
+  		for(var i=0; i < this.itemList().length; i++){
+  			count += parseInt(user.orders[itemlist[i]]);
+  		}
+  		return count;
+		}
+	}
+})
+
+// テーブル
+Vue.component("vtable", {
+	name: "vtable",
+	props: ["items", "users"],
+	template: '<table class="table table-bordered">' +
+			  '<thead>' +
+					'<tr>' + 
+						'<th>品目</th>' + 
+						'<th>在庫</th>' + 
+						'<th>受注</th>' +
+						'<th>残数</th>' +
+						'<th v-for="user in users">{{user.name}}</th>' +
+					'</tr>' +
+				'</thead>' + 
+				'<vBody v-bind:items="items" v-bind:users="users"></vBody>' +
+			'</table>'
+})
+
 // ルートコンポーネント
 var app = new Vue({
   el: '#app',
   name: "app",
   data: {
-    message: 'Vue.jsでピボットテーブル',
+    message: 'Crosstab by Vue.js',
     users: [
     	{name: "yuto", level: 1, orders: {
 	    		item1: 1,
@@ -115,26 +188,9 @@ var app = new Vue({
     console: ""
   },
   methods: {
-  	itemList: function(){
-  		return this.items.map(function(r){ return r.name; });
-  	},
-  	itemOrderSummary: function(itemName){
-  		return this.users.map(function(user){ return user.orders[itemName] }).reduce(function(prev, current){ return parseInt(prev) + parseInt(current); });
-  	},
-  	userOrderSummary: function(userName){
-  		user = this.getUser(userName);
-  		itemlist = this.itemList();
-  		count = 0;
-  		for(var i=0; i < this.itemList().length; i++){
-  			count += parseInt(user.orders[itemlist[i]]);
-  		}
-
-  		return count;
-  	},
   	updateOrder: function(itemName, userName, qty){
   		user = this.getUser(userName);
   		user.orders[itemName] = qty;
-
   		now = new Date();
   		log = [{
 						updated_at: now,
